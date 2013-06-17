@@ -55,6 +55,7 @@ function pullData () {
 	$("object").style.display = "block";
 	for(var i=0, j=localStorage.length; i<j; i++){
 		var createLi = document.createElement("li");
+		var linkLi = document.createElement("ul");
 		createList.appendChild(createLi);
 		var storageKey = localStorage.key(i);
 		var storageValue = localStorage.getItem(storageKey);
@@ -66,8 +67,32 @@ function pullData () {
 			createSubList.appendChild(createSubLi);
 			var objSubText = listObject[n][0]+"  "+listObject[n][1];
 			createSubLi.innerHTML = objSubText;
-		}	
+			createSubList.appendChild(linkLi);
+		}
+		updateItemLink(localStorage.key(i), linkLi);
 	}
+}
+
+function updateItemLink(key, linkLi){
+	var updateLink = document.createElement("a");
+	updateLink.href = "#";
+	updateLink.key = key;
+	var updateText = "Update Item";
+	//updateLink.addEventListener("click", updateItem);
+	updateLink.innerHTML = updateText;
+	linkLi.appendChild(updateLink);
+	
+	var lineBreak = document.createElement("br");
+	linkLi.appendChild(lineBreak);
+	
+	var removeLink = document.createElement("a");
+	removeLink.href = "#";
+	removeLink.key = key;
+	var removeText = "Remove Item from Stash";
+	//removeLink.addEventListener("click", removeItem);
+	removeLink.innerHTML = removeText;
+	linkLi.appendChild(removeLink);
+	
 }
 
 function toggle(n){
