@@ -30,6 +30,7 @@ function saveData(){
 	getType();
 	getQuality();
 	var object 				= {};
+	object.archetype		= ["Archetype:", $("aGroup").value];
 	object.item 			= ["Item Name:", $("itemName").value];
 	object.type 			= ["Type:", typeValue];
 	object.classification 	= ["Classification:", $("classification").value];
@@ -78,7 +79,7 @@ function updateItemLink(key, linkLi){
 	updateLink.href = "#";
 	updateLink.key = key;
 	var updateText = "Update Item";
-	//updateLink.addEventListener("click", updateItem);
+	updateLink.addEventListener("click", updateItem);
 	updateLink.innerHTML = updateText;
 	linkLi.appendChild(updateLink);
 	
@@ -95,6 +96,49 @@ function updateItemLink(key, linkLi){
 	
 }
 
+function updateItem () {
+	var value = localStorage.getItem(this.key);
+	//JSON.parse is opposite of JSON.stringify	
+	var object = JSON.parse(value);
+	
+	//Displays the form
+	toggle("off");
+	
+	$("aGroup").value = object.archetype[1];
+	$("itemName").value = object.item[1];
+	var radioButton = document.forms[0].type;
+	for(var i=0; i<radioButton.length; i++){
+		if(radioButton[i].value == "typeWeapon" && object[1].type == "typeWeapon"){
+		radioButton[i].setAttribute("checked", "checked");
+		}else if(radioButton[i].value == "typeArmor" && object[1].type == "typeArmor"){
+		radioButton[i].setAttribute("checked", "checked");
+		}
+	}
+	$("classification").value = object.classification[1];
+	var qualityBox = document.forms[0].quality;
+	for(var i=0; i<qualityBox.length; i++){
+		if(qualityBox[i].value == "qualityCommon" && object[1].quality == "qualityCommon"){
+		qualityBox[i].setAttribute("checked", "checked");
+		} else if(qualityBox[i].value == "qualityMagical" && object[1].quality == "qualityMagical"){
+		qualityBox[i].setAttribute("checked", "checked");
+		} else if(qualityBox[i].value == "qualityLegendary" && object[1].quality == "qualityLegendary"){
+		qualityBox[i].setAttribute("checked", "checked");
+		}
+	}
+	$("sellRange").value = object.sellValue[1];
+	$("stashDate").value = object.dateStashed[1];
+	$("dropped").value = object.droppedFrom[1];
+	
+	//remove the listener from Stash It! button
+	save.removeEventListener("click", storeData);
+	
+	//change submit to edit button
+	$("submit").value = "Edit Item"'
+	var editStash = $("submit");
+	editStash.addEventListener("click", validate);  //save the key value as a property of the editStash even to use that data when edited
+	editSubmit.key = this.key;
+}
+
 function toggle(n){
 	switch(n){
 		case "on":
@@ -104,14 +148,53 @@ function toggle(n){
 			$("stashMore").style.display = "inline"
 			break;
 		case "off":
-			$(forms[0]).style.display = "block";
+			$("itemForm").style.display = "block";
 			$("clearData").style.display = "inline";
 			$("displayData").style.display = "inline";
-			$(addNew).style.display = "none";
+			$("stashMore").style.display = "none";
 			$("object").style.display = "none";
 			break;	
 		default:
 			return false;
+	}
+}
+
+function validate(){
+	//define the elements 
+	var pullArchetype = $("archetypeSelect");
+	var pullItem = $("itemName");
+	var pullType = $("type");
+	var pullClassification = $("classification");	
+	var pullQuality = $("quality");
+	
+	//error message for missing data
+	var errorArray = [];
+	
+	//Validation Conditionals
+	if(pullArchetype == "--Choose Item Archetype--"){
+		var archetypeError = "Please choose a group."
+		pullArchetype.style.border = "1px solid red";
+		errorArray.push(archetypeError);
+	}
+	if(pullItem == ""){
+		var itemError = "Please enter item name."
+		pullItem.style.border = "1px solid red";
+		errorArray.push(itemError);
+	}
+	if(pullType == ""){
+		var typeError = "Please select type."
+		pullType.style.border = "1px solid red";
+		errorArray.push(typeError);
+	}
+	if(pullClassification == "Please Select"){
+		var classificationError = "Please select classification."
+		pullClassification.style.border = "1px solid red";
+		errorArray.push(classificationError);
+	}
+	if(pullQuality == ""){
+		var qualityError = "Please select quality."
+		pullQuality.style.border = "1px solid red";
+		errorArray.push(qualityError);
 	}
 }
 
@@ -142,7 +225,7 @@ function createArchetype(){
 }
 
 //Global Variables
-var 	archetype = ["--Choose Item Archetype--", "Warrior", "Rogue", "Mage"]
+var archetype = ["--Choose Item Archetype--", "Warrior", "Rogue", "Mage"]
 var typeValue,
 	typeQuality
 ;
@@ -151,7 +234,7 @@ createArchetype();
 
 //The Call
 var submit = $("submit");
-submit.addEventListener("click", saveData);
+submit.addEventListener("click", validate);
 var displayData = $("displayData");
 displayData.addEventListener("click", pullData);
 var clearData = $("clearData");
