@@ -25,8 +25,13 @@ function getQuality() {
 	}
 }
 
-function saveData(){
+function saveData(key){
+	//condition for if key or not to store new data or edit current data
+	if(!key){
 	var storeNumber = Math.floor(Math.random()*100000001);
+	} else {
+		id = key;
+	}
 	getType();
 	getQuality();
 	var object 				= {};
@@ -130,13 +135,13 @@ function updateItem () {
 	$("dropped").value = object.droppedFrom[1];
 	
 	//remove the listener from Stash It! button
-	save.removeEventListener("click", storeData);
+	submit.removeEventListener("click", saveData);
 	
 	//change submit to edit button
-	$("submit").value = "Edit Item"'
+	$("submit").value = "Edit Item"
 	var editStash = $("submit");
 	editStash.addEventListener("click", validate);  //save the key value as a property of the editStash even to use that data when edited
-	editSubmit.key = this.key;
+	editStash.key = this.key;
 }
 
 function toggle(n){
@@ -159,43 +164,64 @@ function toggle(n){
 	}
 }
 
-function validate(){
+function validate(event){
 	//define the elements 
 	var pullArchetype = $("archetypeSelect");
 	var pullItem = $("itemName");
-	var pullType = $("type");
+	var pullType = $("typeWeapon" && "typeArmor");
 	var pullClassification = $("classification");	
-	var pullQuality = $("quality");
+	var pullQuality = $("qualityCommon" && "qualityMagical" && "qualityLegendary");
+	
+	//clear error messages
+	errorMessage.innerHTML = "";
+	pullArchetype.style.border = "1px solid black";
+	pullItem.style.border = "1px solid black";
+	pullType.style.border = "1px solid black";
+	pullClassification.style.border = "1px solid black";
+	pullQuality.style.border = "1px solid black";
+	
 	
 	//error message for missing data
 	var errorArray = [];
 	
 	//Validation Conditionals
-	if(pullArchetype == "--Choose Item Archetype--"){
+	if(pullArchetype === "--Choose Item Archetype--"){
 		var archetypeError = "Please choose a group."
 		pullArchetype.style.border = "1px solid red";
 		errorArray.push(archetypeError);
 	}
-	if(pullItem == ""){
+	if(pullItem === ""){
 		var itemError = "Please enter item name."
 		pullItem.style.border = "1px solid red";
 		errorArray.push(itemError);
 	}
-	if(pullType == ""){
+	if(pullType === ""){
 		var typeError = "Please select type."
 		pullType.style.border = "1px solid red";
 		errorArray.push(typeError);
 	}
-	if(pullClassification == "Please Select"){
+	if(pullClassification === "Please Select"){
 		var classificationError = "Please select classification."
 		pullClassification.style.border = "1px solid red";
 		errorArray.push(classificationError);
 	}
-	if(pullQuality == ""){
+	if(pullQuality === ""){
 		var qualityError = "Please select quality."
 		pullQuality.style.border = "1px solid red";
 		errorArray.push(qualityError);
 	}
+	//If any errors display them
+	if(errorArray.length >= 1){
+		for(var i=0, j=errorArray.length; i < j; i++){
+			var errorTxt = document.createElement("li");
+			errorTxt.innerHTML = errorArray[i];
+			errorMessage.appendChild(errorTxt);
+		}
+		event.preventDefault();
+		return false;
+	} else {
+		saveData(this.key);
+	}	
 }
 
 function clearItems(){
@@ -225,7 +251,8 @@ function createArchetype(){
 }
 
 //Global Variables
-var archetype = ["--Choose Item Archetype--", "Warrior", "Rogue", "Mage"]
+var archetype = ["--Choose Item Archetype--", "Warrior", "Rogue", "Mage"];
+var errorMessage = $("error");
 var typeValue,
 	typeQuality
 ;
