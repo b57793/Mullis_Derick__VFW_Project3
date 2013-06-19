@@ -30,7 +30,7 @@ function saveData(key){
 	if(!key){
 	var storeNumber = Math.floor(Math.random()*100000001);
 	} else {
-		id = key;
+		storeNumber = key;  //use existing key to update not create new item in local storage
 	}
 	getType();
 	getQuality();
@@ -61,7 +61,7 @@ function pullData () {
 	$("object").style.display = "block";
 	for(var i=0, j=localStorage.length; i<j; i++){
 		var createLi = document.createElement("li");
-		var linkLi = document.createElement("ul");
+		var linkLi = document.createElement("li");
 		createList.appendChild(createLi);
 		var storageKey = localStorage.key(i);
 		var storageValue = localStorage.getItem(storageKey);
@@ -75,10 +75,11 @@ function pullData () {
 			createSubLi.innerHTML = objSubText;
 			createSubList.appendChild(linkLi);
 		}
-		updateItemLink(localStorage.key(i), linkLi);
+		updateItemLink(localStorage.key(i), linkLi);  //create edit and delete buttons link for each item in local storage
 	}
 }
 
+//create the edit and delete links for each stored item when displayed
 function updateItemLink(key, linkLi){
 	var updateLink = document.createElement("a");
 	updateLink.href = "#";
@@ -95,16 +96,15 @@ function updateItemLink(key, linkLi){
 	removeLink.href = "#";
 	removeLink.key = key;
 	var removeText = "Remove Item from Stash";
-	//removeLink.addEventListener("click", removeItem);
+	removeLink.addEventListener("click", removeItem);
 	removeLink.innerHTML = removeText;
 	linkLi.appendChild(removeLink);
-	
 }
 
 function updateItem () {
-	var value = localStorage.getItem(this.key);
+	var itemValue = localStorage.getItem(this.key);
 	//JSON.parse is opposite of JSON.stringify	
-	var object = JSON.parse(value);
+	var object = JSON.parse(itemValue);
 	
 	//Displays the form
 	toggle("off");
@@ -113,20 +113,20 @@ function updateItem () {
 	$("itemName").value = object.item[1];
 	var radioButton = document.forms[0].type;
 	for(var i=0; i<radioButton.length; i++){
-		if(radioButton[i].value == "typeWeapon" && object[1].type == "typeWeapon"){
+		if(radioButton[i].value == "weapon" && object.type[1] == "weapon"){
 		radioButton[i].setAttribute("checked", "checked");
-		}else if(radioButton[i].value == "typeArmor" && object[1].type == "typeArmor"){
+		}else if(radioButton[i].value == "armor" && object.type[1] == "armor"){
 		radioButton[i].setAttribute("checked", "checked");
 		}
 	}
 	$("classification").value = object.classification[1];
 	var qualityBox = document.forms[0].quality;
 	for(var i=0; i<qualityBox.length; i++){
-		if(qualityBox[i].value == "qualityCommon" && object[1].quality == "qualityCommon"){
+		if(qualityBox[i].value == "common" && object.quality[1] == "common"){
 		qualityBox[i].setAttribute("checked", "checked");
-		} else if(qualityBox[i].value == "qualityMagical" && object[1].quality == "qualityMagical"){
+		} else if(qualityBox[i].value == "magical" && object.quality[1] == "magical"){
 		qualityBox[i].setAttribute("checked", "checked");
-		} else if(qualityBox[i].value == "qualityLegendary" && object[1].quality == "qualityLegendary"){
+		} else if(qualityBox[i].value == "legendary" && object.quality[1] == "legendary"){
 		qualityBox[i].setAttribute("checked", "checked");
 		}
 	}
@@ -138,10 +138,20 @@ function updateItem () {
 	submit.removeEventListener("click", saveData);
 	
 	//change submit to edit button
-	$("submit").value = "Edit Item"
+	$("submit").value = "Edit Item";
 	var editStash = $("submit");
 	editStash.addEventListener("click", validate);  //save the key value as a property of the editStash even to use that data when edited
 	editStash.key = this.key;
+}
+
+function removeItem(){
+	var prompt = confirm("Remove item from stash permanently?");
+		if(prompt){
+			localStorage.removeItem(this.key);
+			window.location.reload();
+		} else {
+			alert("The item was not removed from stash");
+		}
 }
 
 function toggle(n){
@@ -166,49 +176,35 @@ function toggle(n){
 
 function validate(event){
 	//define the elements 
-	var pullArchetype = $("archetypeSelect");
+	var pullArchetype = $("aGroup");
 	var pullItem = $("itemName");
-	var pullType = $("typeWeapon" && "typeArmor");
 	var pullClassification = $("classification");	
-	var pullQuality = $("qualityCommon" && "qualityMagical" && "qualityLegendary");
 	
 	//clear error messages
 	errorMessage.innerHTML = "";
 	pullArchetype.style.border = "1px solid black";
 	pullItem.style.border = "1px solid black";
-	pullType.style.border = "1px solid black";
 	pullClassification.style.border = "1px solid black";
-	pullQuality.style.border = "1px solid black";
 	
 	
 	//error message for missing data
 	var errorArray = [];
 	
 	//Validation Conditionals
-	if(pullArchetype === "--Choose Item Archetype--"){
-		var archetypeError = "Please choose a group."
+	if(pullArchetype.value === "--Choose Item Archetype--"){
+		var archetypeError = "Please choose a group.";
 		pullArchetype.style.border = "1px solid red";
 		errorArray.push(archetypeError);
 	}
-	if(pullItem === ""){
-		var itemError = "Please enter item name."
+	if(pullItem.value === ""){
+		var itemError = "Please enter item name.";
 		pullItem.style.border = "1px solid red";
 		errorArray.push(itemError);
 	}
-	if(pullType === ""){
-		var typeError = "Please select type."
-		pullType.style.border = "1px solid red";
-		errorArray.push(typeError);
-	}
-	if(pullClassification === "Please Select"){
-		var classificationError = "Please select classification."
+	if(pullClassification.value === "select"){
+		var classificationError = "Please select classification.";
 		pullClassification.style.border = "1px solid red";
 		errorArray.push(classificationError);
-	}
-	if(pullQuality === ""){
-		var qualityError = "Please select quality."
-		pullQuality.style.border = "1px solid red";
-		errorArray.push(qualityError);
 	}
 	//If any errors display them
 	if(errorArray.length >= 1){
@@ -220,7 +216,7 @@ function validate(event){
 		event.preventDefault();
 		return false;
 	} else {
-		saveData(this.key);
+		saveData(this.key); //if no errors save data
 	}	
 }
 
